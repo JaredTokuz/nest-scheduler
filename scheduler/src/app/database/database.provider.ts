@@ -12,7 +12,7 @@ export const databaseProviders: FactoryProvider = {
       throw e;
     });
 
-    return connection.db("fornida").collection("events");
+    return connection.db("").collection("events");
   },
 };
 
