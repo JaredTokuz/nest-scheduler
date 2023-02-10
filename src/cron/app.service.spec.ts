@@ -1,8 +1,8 @@
-import { Test } from '@nestjs/testing';
+import { Test } from "@nestjs/testing";
 
-import { AppService } from './app.service';
+import { AppService } from "./cron.service";
 
-describe('AppService', () => {
+describe("AppService", () => {
   let service: AppService;
 
   beforeAll(async () => {
@@ -13,9 +13,9 @@ describe('AppService', () => {
     service = app.get<AppService>(AppService);
   });
 
-  describe('getData', () => {
+  describe("getData", () => {
     it('should return "Welcome to scheduler!"', () => {
-      expect(service.multiSync()).toEqual({ message: 'Welcome to scheduler!' });
+      expect(service.multiSync()).toEqual({ message: "Welcome to scheduler!" });
     });
   });
 });
