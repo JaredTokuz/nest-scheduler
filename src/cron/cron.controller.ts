@@ -32,15 +32,12 @@ export class CronController {
 
   @Delete(":id")
   delete(@Param("id") id: string) {
-    return this.cronService.deleteCron();
+    return this.cronService.deleteCron(id);
   }
 
   @Patch(":id")
-  update(@Body() body: any) {}
-
-  @Post("run")
-  run(@Body() body: WithId<ScheduleEvent>) {
-    return this.cronService.runJob(body);
+  update(@Body() createCron: CreateCronDto) {
+    return this.cronService.update(createCron);
   }
 
   @Post("run/:id")
