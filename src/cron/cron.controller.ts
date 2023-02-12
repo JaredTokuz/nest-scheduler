@@ -7,7 +7,6 @@ import {
   Patch,
   Post,
 } from "@nestjs/common";
-import { WithId } from "mongodb";
 import { CronSchedulingService } from "./cron.service";
 import { CreateCronDto } from "./dto/create-cron.dto";
 
@@ -37,7 +36,7 @@ export class CronController {
 
   @Patch(":id")
   update(@Body() createCron: CreateCronDto) {
-    return this.cronService.update(createCron);
+    return this.cronService.updateCron(createCron);
   }
 
   @Post("run/:id")

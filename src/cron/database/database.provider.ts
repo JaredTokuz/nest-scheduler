@@ -1,19 +1,24 @@
-import { MongoClient, Collection } from "mongodb";
+import { MongoClient, Collection, MongoClientOptions } from "mongodb";
 import { FactoryProvider } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import { ApiConfigService } from "../config.service";
 
-export const TASKS_COLLECTION = "TASKS_COLLECTION";
+export const CRONJOBS = "CRONJOBS";
 
-export const databaseProviders: FactoryProvider = {
-  provide: TASKS_COLLECTION,
-  useFactory: async (configService: ConfigService): Promise<Collection> => {
-    configService.get("MONGO_URI");
-    const client = await MongoClient.connect("");
+export const cronJobProvider: FactoryProvider = {
+  provide: CRONJOBS,
+  useFactory: async (config: ApiConfigService): Promise<Collection> => {
+    let opts: MongoClientOptions = {
+      connectTimeoutMS: 2000,
+      maxPoolSize: 2,
+      minPoolSize: 1,
+    }
+    const client = await MongoClient.connect(`${config.mongoUri}`, opts);
     const connection = await client.connect().catch((e) => {
-      console.log("provider error connecting to mongo", e);
+      console.error("provider error connecting to mongo", e);
       throw e;
     });
 
-    return connection.db("").collection("events");
+    return connection.db(config.dbName).collection("cronjobs");
   },
+  inject: [ApiConfigService],
 };

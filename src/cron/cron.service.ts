@@ -4,8 +4,8 @@ import { Cron, SchedulerRegistry, CronExpression } from "@nestjs/schedule";
 import { CronJob, CronJobParameters, time } from "cron";
 import { AxiosRequestConfig } from "axios";
 import { Collection, Filter, ObjectId, WithId } from "mongodb";
-import { CronTask } from "./interfaces/cron-task.interface";
-import { TASKS_COLLECTION } from "./database/database.provider";
+import { ActiveCronTask, CronTask, TaskDocument } from "./interfaces/cron-task.interface";
+import { CRONJOBS } from "./database/database.provider";
 
 @Injectable()
 export class CronSchedulingService {
@@ -14,7 +14,7 @@ export class CronSchedulingService {
   constructor(
     private httpService: HttpService,
     private schedulerRegistry: SchedulerRegistry,
-    @Inject(TASKS_COLLECTION)
+    @Inject(CRONJOBS)
     private tasksCollection: Collection<CronTask>
   ) {
     this.getTasks()
@@ -32,11 +32,19 @@ export class CronSchedulingService {
       });
   }
 
-  async getTasks() {
-    return this.tasksCollection.find().toArray();
+  async getTasks(): Promise<ActiveCronTask[]> {
+    const documents = await this.tasksCollection.find().toArray();
+    const registered = this.schedulerRegistry.getCronJobs();
+    const activeTasks = documents.map((doc) => {
+      return {
+        ...doc,
+        active: registered.get(doc._id.toString()),
+      }
+    });
+    return activeTasks;
   }
 
-  async getTaskById(id: string) {
+  async getTaskById(id: string): Promise<TaskDocument | null> {
     return this.tasksCollection.findOne({ _id: new ObjectId(id) });
   }
 
@@ -70,7 +78,7 @@ export class CronSchedulingService {
   }
 
   /** updates individual event's schedule without restarting the server */
-  async update(cron: CronTask) {
+  async updateCron(cron: Partial<CronTask>) {
     try {
       const updatedCron = await this.tasksCollection.findOneAndUpdate({ name: cron.name }, { $set: cron})
       if (!updatedCron.value) {
